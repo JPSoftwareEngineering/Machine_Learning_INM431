@@ -1,0 +1,65 @@
+clear all; clc; close all;
+rng('default');
+
+% Although a coin will realistically have a fair probability of landing
+% either heads or tails of 0.5, in the statistical world we assume that
+% each coin has a slight bias. So for example, if a coin factory produces a
+% 100 coins, then each coin will have a slight bias for heads or tails,
+% i.e. a higher/lower probability of landing on heads/tails.
+% Using linspace, we assume that there are only 101 discrete biases, i.e.
+% probability values between 0 and 1:
+
+coin_tosses = 100; % Number of coin tosses, i.e. experiments
+
+bias_heads = 0.5; % Our assumed bias for getting heads
+
+possible_coin_toss_biases = linspace(0,1,100);
+
+figure; axis([0 1 0 1]);
+
+% We assume to have no reason to believe that a randomly picked coin is
+% more likely to have any of the 101 values compared to the rest. 
+% Therefore, you start your estimation of the bias by assigning it a 
+% uniform prior distribution.
+% The ones() method gives us a vector of 1s of the size of our
+% possible_coin_toss_biases vector, and then we divide that by the size of
+% possible_coin_toss_biases again to get even probabilities for each:
+
+prior_uniform_coin_tosses = ones(length(possible_coin_toss_biases),1)/length(possible_coin_toss_biases);
+
+% Generate a vector of random coin flips (1 = Heads; 0 = Tails):
+% flip_series = randi([0, 1], [1, coin_tosses]); for when we do not have a
+flip_series = double(rand(coin_tosses, 1) < bias_heads); % We generated 
+
+for k=1:coin_tosses
+    %Calculate prior, likelihood, and evidence
+    prior = prior_uniform_coin_tosses;
+    % Let us break down the likelihood formula below.
+    % possible_coin_toss_biases'.^flip_series(k) is us saying that for a
+    % particular coin toss bias, i.e. probability, after a flip, we either
+    % for a 0 (Tails) or a 1 (Heads), remember, power to the 0 or 1 will
+    % give a 1 or just the original number, respectively so if the 
+    % bias = 0.3, then we get either 0.3^0 = 1, or 0.3^1 = 0.3.
+    % Then we multiply each by
+    % (1-possible_coin_toss_biases').^(1-flip_series(k)), which is just
+    % opposite. We do this to escape having to do pointless iterations.
+    % Connected, all the likelihood formula is giving us is whether we have
+    % our bias or (1-bias), which gives us the linear likelihood line.
+    likelihood = possible_coin_toss_biases'.^flip_series(k).*(1-possible_coin_toss_biases').^(1-flip_series(k));
+    evidence = sum(likelihood .* prior);
+    
+    %Calculate the posterior distribution
+    posterior = likelihood .* prior ./ evidence;
+    
+    %Dynamically plot the posterior distribution
+    figure(1);
+    plot(possible_coin_toss_biases', prior_uniform_coin_tosses);
+    title(sprintf('Flip %d out of %d', k, coin_tosses));
+    xlabel('Heads Bias'); ylabel('P(Heads Bias | Flips)');
+    ylim([0 1]);
+    set(gca,'Xtick',0:0.1:1);
+    drawnow;
+
+    %Make the posterior distribution the next prior distribution
+    prior_uniform_coin_tosses = posterior;
+end

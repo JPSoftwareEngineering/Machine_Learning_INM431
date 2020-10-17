@@ -6,6 +6,8 @@
 
 [Week 2 Notes](#Week-2-Notes)
 
+[Week 3 Notes](#Week-3-Notes)
+
 ## Week 1 Notes
 
 ### Key MatLab Commands
@@ -34,10 +36,10 @@ A model **parameter** is a constant configuration/setting variable that is inter
 
 A model **hyperparameter** is a configuration/setting that is external to the model and whose value cannot be estimated from data.
 
-They are often used in processes to help **estimate** model parameters.
-They are often specified by the practitioner.
-They can often be set using heuristics.
-They are often tuned for a given predictive modeling problem.
+- They are often used in processes to help **estimate** model parameters.
+- They are often specified by the practitioner.
+- They can often be set using heuristics.
+- They are often tuned for a given predictive modeling problem.
 
 We cannot know the best value for a model hyperparameter on a given problem. We may use rules of thumb, copy values used on other problems, or search for the best value by trial and error.
 
@@ -264,3 +266,243 @@ Technically, training is performed on train set, model is tuned on a validation 
 **Validation set** is different from **test set**, in the sense that the validation set actually can be regarded as a part of the training set, because it is used to build your model, neural networks or others. It is usually used for parameter selection and to avoid overfitting. If your model is non-linear (like NN) and is trained on a training set only, it is very likely to get 100% accuracy and overfit, thus get very poor performance on the test set. Thus a validation set, which is independant from the training set, is  used for parameter selection. In this process, people usually use **cross validation**. 
 
 So basically, the validation set is used for tuning the parameters of a model whilst the test set is used for performance evaluation. 
+
+## Week 3 Notes
+
+### Frequentist vs Bayesian Modelling
+
+Let us assume that a set of probability distribution parameters, **Θ**, are used to try and best explain why our sample dataset, **D** has occured, i.e. our outcomes. We may wish to estimate the parameters with the help of the Bayes rule:
+
+![alt text](BayesRule.png "Bayes Rule")
+
+Note! The denominator, p(D), acts as the normalisation constant because remember, the likelihood does not necessarily sum up to 1, because it is the sum of ALL the various probabilities of getting each observation in our data given a set of parameters, and NOT the probability of a specific parameter over all observations.
+
+#### Maximum Likelihood Estimate
+
+With MLE, we seeking a **point estimate** for Θ, i.e. a set of individual values which maximises the likelihood, p(D|Θ). We can denote this value as 𝚯, and remember, it is a point estimate found through the derivatives with respect to each parameter, **so it is NOT a random variable**.
+
+In other words, MLE treats the term p(Θ)/p(D) of our Bayesian rule formula, as a **constant** and does not allow us to inject our **prior beliefs**, p(Θ), about the likely values for Θ in the estimation calculations for our model. 
+
+#### Bayesian Estimate
+
+Bayesian estimation, by contrast, fully calculates (or at times approximates) the **posterior distribution**, p(Θ|D). So basically, Bayesian inference treats Θ as a random variable and allows us to integrate a mathematical representation of **uncertainty** in the form of a prior distribution.
+
+In Bayesian modelling, we input probability density functions and get out probability density functions as well, rather than a single point as in MLE.
+
+Of all the possible values for Θ made available by the output distribution, p(Θ|D), i.e. posterior distribution, it is OUR job as researchers to select a value that we consider to **best in some sense**.
+
+For example, we may choose the expected value of Θ assuming its variance is small enough.
+
+The variance that we can calculate for the parameter Θ **from its posterior distribution** allows us to express our confidence in any specific value we may use as an estimate. If the variance is too large, we may declare that there does not exist a good estimate for Θ.
+
+As a trade-off, the Bayesian estimate is made complex by the fact that we now have to deal with the denominator in the Bayes rule, i.e. the **evidence**. Here, evidence or probability of evidence is represented by:
+
+![alt text](ProbabilityOfEvidenceBayesRule.png "Probability Of Evidence Bayes Rule")
+
+This leads to the concept of **conjugate priors**.
+
+#### What are Conjugate Priors?
+
+If the prior and posterior distributions are in the same family, the prior and posterior are called **conjugate distributions**. For example, the beta distribution is a conjugate prior, if the posterior also has a beta distribution. Then we can say that the beta distribution is the **conjugate family** for the likelihood distribution. So when we say conjugate, we mean 'different forms of the same entity'.
+
+**Wait, so why are conjugate priors so important in Bayesian modelling?**
+
+When carrying out Bayesian analysis, we assume a prior distribution for our parameters, and then sample some random parameters from this distribution and plug these into some generative model, linear regression for example, to get some simulated outcomes. Then we gather our sample data, and we match our sample data outcomes to the same simulated outcomes, and then come up with a posterior distribution based on the amount of times our matching parameter estimates came up during our initial random parameter value picks. 
+
+ Conjugate priors are a way of bypassing this expensive computation. So if the likelihood and prior distributions are from the same family, like Binomial and Beta, we can assume that the posterior distribution will also be of the same family as the prior, and thus we just need to plug in the parameter values that "convert" the prior distribution into the other distribution family member, i.e. the posterior.
+
+ so when we multiply two Gaussians for example, we know that the result will also be a Gaussian. The same for Beta distributions. Contrast this with the example in the lecture slides where a uniform distribution is multiplied by the likelihood and then the result needs to be normalised, that is, re-scaled to make the area under the curve equal to 1. This is what the denominator in the Bayes theorem does, i.e. the evidence. That part of the computation is expensive (can take a long time).
+
+#### Connecting All This Together - Bayesian Modelling Steps
+
+When you are carrying out Bayesian data analysis, you need the following three things:
+
+1. Data
+2. A Generative Model
+3. Prios
+
+A **generative model** is any kind of computer program, mathematical expression, or model that you can feed **fixed parameter values** to output **simulated data**. Typical examples are of course, probability distributions.
+
+But of course, in the real world, we know the data but not the parameter values. So we are using Bayesian inference (one of many techniques available) to work our way back to find the parameters and the generative model that best represents our data.
+
+So, let us quickly go through the various steps of Bayesian modelling:
+
+1. Define the prior distribution that incorporates your subjective beliefs about a parameter(s). 
+
+So, say we assume that our paramters have a uniform distribution (for whatever reason), we then draw a **random** parameter value from this distribution and plug in our random parameter(s) into our model (generative model) that we are using, for example a linear regression model. 
+
+We repeat this process of drawing a random parameter(s) from the prior distribution (uniform) and then running our generative model for, however many times, 100, 1000, 100000 etc, to generate numerous amounts of **simulated data**, i.e. output results from our initial random parameter values.
+
+2. We then gather our sample data, i.e. the actual results of the real world and compare this data to the outcomes of our generative model that we got from using our initial random parameter values. By comparing the outcomes, we filter out any parameter values that did not result in the same simulated data as our real world outcomes.
+
+3. Next, using our filtered parameter values, we come up with a posterior distribution. How is this done? Well, say a random parameter value of 0.5 from our uniform prior distribution resulted in the same outcomes as our sample data, and from our numerous random parameter picks from the prior distribution, the value of 0.5 came up 21% of the time. So, our posterior distribution will give the outcomes from the parameter value of 0.5, a PDF of 21%. 
+
+So by assigning our filtered parameter values with the amount of times (probability) it came up from our random draws, it will help us to model a posterior distribution, for example lets say this time it formed a Normal distribution:
+
+![alt text](PriorAndPosteriorDistributionCalculationBayesModelling.png "Prior And Posterior Distribution Calculation Bayes Modelling")
+
+![alt text](PriorAndPosteriorDistributionBayesModelling.png "Prior And Posterior Distribution Bayes Modelling")
+
+So, the posterior distribution is a probability distribution that represents your updated beliefs about the parameter after having seen the data.
+
+4. Analyse the posterior distribution and summarise it (mean, median, sd, quantiles, ...).
+
+**Now, you might argue that, if we are picking parameters from a probability distribution that gives us the high probability estimates of getting our sample data, then is this not similar to the maximum likelihood?** Well, yes, this is why we actually call this the **Bayesian extension of the maximum likelihood estimate**.
+
+**Finally, we carry out these steps recursively (Recursive Bayes), by updating our prior with the posterior, and thus as we carry out more and more experiments with new data, we start to get a more accurate/confident estimate of our parameter.**
+
+### Week 3 Tutorial Exercises - Recursive Bayesian Estimation
+
+#### Breaking Down The bayesExample MatLab Code
+
+The **'linspace(x1, x2)'** method returns a row vector of 100 evenly spaced points between x1 and x2:
+
+```
+x = linspace(0,10,1000);
+```
+
+The third parameter, 1000, is the size of the row vector, i.e. how many elements do you want?
+
+Next, we plot a figure with axis limits:
+
+```
+figure; hold on; axis([0 10 0 1]);
+```
+
+**'hold on'** retains plots in the current axes so that new plots added to the axes do not delete existing plots.
+
+**'axis()'** sets axis limits, so above we have the x-axis as ranging from 0 to 10, and the y-axis from 0 to 1.
+
+We now set the prior distribution, for this exercise it is just a normal distribution:
+
+```
+ % Prior distribution 
+pm = 5; % Prior mean
+ps2 = 4; % Prior variance
+prior = (2*pi*ps2)^(-0.5)*exp(-0.5*(x-pm).^2/ps2);
+plotPrior = plot(x,prior,'k'); % Plot 1: prior distribution
+leg = legend('prior');
+```
+
+Finally, we move onto the likelihood function. There some important things to notice in the code below:
+
+1. The first is that we have 10 loops, and within each loop we use the entire dataset in the x variable each time in the loop to set our likelihood and posterior distributions.
+
+2. Then, under the if condition within the loop, notice the code that says:
+
+prior = posterior; % Plot 3: product distribution 
+pm = Pm;
+ps2 = Ps2;
+
+We are updating the prior with our posterior each loop to get a more accurate/confident estimate of our parameters each time.
+
+```
+% Number of recursive iterations
+for i = 1:10,
+    % Likelihood function 
+    lm = 6; % sample mean
+    ls2 = 3; % sample variance
+    plotSample = plot(lm, 0, 'bx', 'MarkerSize', 16); % Plot 2: sample mean
+    leg = legend('prior', 'measurement');
+    
+    like = (2*pi*ls2)^(-0.5)*exp(-0.5*(x-lm).^2/ls2);
+    plotLike = plot(x,like); % Plot 3: sample distribution
+    leg = legend('prior', 'measurement', 'likelihood');
+
+    Ps2 = (1/ps2 + 1/ls2)^(-1);
+    Pm = Ps2*(pm/ps2 + lm/ls2);
+    posterior = (2*pi*Ps2)^(-0.5)*exp(-0.5*(x-Pm).^2/Ps2);
+    plotPost = plot(x, posterior, 'r'); % Plot 3: product distribution
+    leg = legend('prior', 'measurement', 'likelihood', 'posterior');
+    
+    if(i < 10),
+    
+        pause(1);
+
+        delete(get(leg, 'Children'));
+
+        delete(plotPrior);
+        delete(plotLike);
+        delete(plotPost);
+        delete(plotSample);
+
+        prior = posterior; % Plot 3: product distribution 
+        pm = Pm;
+        ps2 = Ps2;
+
+        plotPrior = plot(x,prior,'k'); % Plot 1: prior distribution
+        leg = legend('prior');
+    end;
+end;
+```
+#### Coin Flipping with Recursive Bayes Inference
+
+Let us first organise our model into these steps:
+
+1. Set the number of experiments (coin flip trials) we want for our model:
+
+```
+coin_tosses = 100;
+```
+
+2. Give our bias, i.e. probability of flipping a heads, of:
+
+```
+bias_heads = 0.5
+```
+
+The bias (our belief of what value the parameters of our model will be), is the parameter we are trying to estimate for our model, i.e. the probability of flipping a heads each time.
+
+3. Set a discrete distribution for all the possible biases between 0 and 1:
+
+```
+possible_coin_toss_biases = linspace(0,1,100);
+```
+
+4. We assign a prior probability distribution to each of our parameter estimates (bias possibilities):
+
+```
+prior_uniform_coin_tosses = ones(length(possible_coin_toss_biases),1)/length(possible_coin_toss_biases);
+```
+
+5. Let us now simulate 100 trials/experiments of coin tosses:
+
+```
+coin_flip_samples = double(rand(coin_tosses, 1) < bias_heads);
+```
+
+The code above assigns a value of 0 (Tails) if our random value (toss result) is below 0.5 and a 1 (Heads) if above or equal to 0.5.
+
+6. Finally, based on our sample data, we need to keep updating our prior distribution for 100 experiments and see what kind of estimate we get for the "true" bias.
+
+One important thing to note here is that we have assigned a Binomial distribution for our likelihood function. This means our model does not have a conjugate prior, as is the case for a lot of real world models:
+
+```
+for k=1:coin_tosses
+    % Calculate prior, likelihood, and evidence
+    prior = prior_uniform_coin_tosses;
+    % Remember! Although having conjugate priors is the best case scenario
+    % for Bayes modelling, most experiments do not have conjugate priors.
+    % Like in this case where the likelihood, i.e. distribution for the
+    % data given our parameter estimates, will have a Binomial distribution
+    % since our data will take only one of two categorical values, 0 or 1.
+    % Thus the likelihood function below is for a Binomial distribution.
+    likelihood = possible_coin_toss_biases'.^coin_flip_samples(k).*(1-possible_coin_toss_biases').^(1-coin_flip_samples(k));
+    evidence = sum(likelihood .* prior);
+    
+    % Calculate the posterior distribution
+    posterior = likelihood .* prior ./ evidence;
+    
+    % Dynamically plot the posterior distribution
+    figure(1);
+    plot(possible_coin_toss_biases', prior_uniform_coin_tosses);
+    title(sprintf('Flip %d out of %d', k, coin_tosses));
+    xlabel('Heads Bias'); ylabel('P(Heads Bias | Flips)');
+    ylim([0 1]);
+    set(gca,'Xtick',0:0.1:1);
+    drawnow;
+
+    % Make the posterior distribution the next prior distribution
+    prior_uniform_coin_tosses = posterior;
+end
+```
