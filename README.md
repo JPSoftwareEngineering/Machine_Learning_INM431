@@ -8,6 +8,8 @@
 
 [Week 3 Notes](#Week-3-Notes)
 
+[Week 4 Notes](#Week-4-Notes)
+
 ## Week 1 Notes
 
 ### Key MatLab Commands
@@ -506,3 +508,37 @@ for k=1:coin_tosses
     prior_uniform_coin_tosses = posterior;
 end
 ```
+
+## Week 4 Notes
+
+### Naive Bayes Classifiers
+
+#### Multinomial Naive Bayes Classifier
+
+The main type of **Naive Bayes Classifier** that gets referred to, is the **Multinomial Naive Bayes Classifier**. So what exactly is a Naive Bayes Classifier?
+
+So a Naive Bayes Classifier is a basic classification algorithm and it usually consists of the following:
+
+1. A set of features, i.e. variables of a dataset, and they are all assumed to be independent.
+
+2. A set of classifications/labels of the dataset.
+
+These are then combined with the Bayesian probability formula:
+
+![alt text](NaiveBayesClassificationFormula.png "Naive Bayes Classification Formula")
+
+where **C** are the vector of classification labels and the **k** is for which label the classification label element is and lastly, **x** is the vector of features.
+
+A great example can be found here:
+
+https://www.youtube.com/watch?v=O2L2Uv9pdDA
+
+#### Gaussian Naive Bayes Classifier
+
+**Gausian Naive Bayes Classifiers** are based on the exact same principles as the Multinomial Bayes Classifier, but the key difference is that we use Gaussian noise for **continuous data**.
+
+Great examples can be found here:
+
+https://www.youtube.com/watch?v=H3EjCKtlVog
+
+https://www.youtube.com/watch?v=H3EjCKtlVog
